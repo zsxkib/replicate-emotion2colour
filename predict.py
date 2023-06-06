@@ -2,11 +2,11 @@
 # https://github.com/replicate/cog/blob/main/docs/python.md
 
 from cog import BasePredictor, Input, Path
-from pathlib import Path as PathlibPath
 from typing import Dict, List, Union
 from transformers import pipeline
 from PIL import Image, ImageDraw
 import numpy as np
+import tempfile
 
 
 class Predictor(BasePredictor):
@@ -36,8 +36,6 @@ class Predictor(BasePredictor):
             "disgust": "#008000",  # green
             "fear": "#800080",  # purple
         }
-        self.output_path_str = "./outputs"
-        PathlibPath(self.output_path_str).mkdir(parents=True, exist_ok=True)
 
     def _create_gradient(
         self,
@@ -152,6 +150,6 @@ class Predictor(BasePredictor):
 
         emotions = self.text_to_emotions_model(text)[0]
         image = self.emotions_to_colorgrad(emotions)
-        image_file_path = PathlibPath(self.output_path_str + "/emotion_gradient.png")
-        image.save(image_file_path)
-        return Path(image_file_path)
+        output_path = Path(tempfile.mkdtemp()) / "out.png"
+        image.save(str(output_path))
+        return output_path
